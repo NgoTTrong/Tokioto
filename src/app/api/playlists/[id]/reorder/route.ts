@@ -12,9 +12,13 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string 
   const body = Body.safeParse(await req.json());
   if (!body.success) return NextResponse.json({ error: "bad body" }, { status: 400 });
   const db = getServiceClient();
-  for (let i = 0; i < body.data.order.length; i++) {
-    await db.from("playlist_tracks").update({ position: i })
-      .eq("playlist_id", id).eq("track_id", body.data.order[i]);
-  }
+  const results = await Promise.all(
+    body.data.order.map((trackId, i) =>
+      db.from("playlist_tracks").update({ position: i })
+        .eq("playlist_id", id).eq("track_id", trackId)
+    )
+  );
+  const failed = results.find(r => r.error);
+  if (failed?.error) return NextResponse.json({ error: failed.error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

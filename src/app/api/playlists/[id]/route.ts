@@ -42,6 +42,8 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   const body = Patch.safeParse(await req.json());
   if (!body.success) return NextResponse.json({ error: "bad body" }, { status: 400 });
   const db = getServiceClient();
+  const { data: existing } = await db.from("playlists").select("id").eq("id", id).maybeSingle();
+  if (!existing) return NextResponse.json({ error: "not found" }, { status: 404 });
   const { data, error } = await db.from("playlists").update(body.data).eq("id", id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ playlist: data });
@@ -52,6 +54,9 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
   const { id } = await ctx.params;
   if (id.startsWith("smart:")) return NextResponse.json({ error: "read only" }, { status: 400 });
   const db = getServiceClient();
-  await db.from("playlists").delete().eq("id", id);
+  const { data: pl } = await db.from("playlists").select("id").eq("id", id).maybeSingle();
+  if (!pl) return NextResponse.json({ error: "not found" }, { status: 404 });
+  const { error } = await db.from("playlists").delete().eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
