@@ -1,5 +1,5 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Track } from "@/types";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
@@ -15,11 +15,12 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
   const [smart, setSmart] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
-  async function load() {
+  const load = useCallback(async () => {
     const d = await fetch(`/api/playlists/${encodeURIComponent(id)}`).then(r => r.json());
     setTracks(d.tracks); setName(d.playlist.name); setSmart(!!d.playlist.smart);
-  }
-  useEffect(() => { load(); }, [id]);
+  }, [id]);
+
+  useEffect(() => { load(); }, [load]);
 
   async function onDragEnd(e: DragEndEvent) {
     if (!e.over || e.active.id === e.over.id) return;

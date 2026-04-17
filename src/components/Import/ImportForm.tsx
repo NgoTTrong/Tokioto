@@ -12,30 +12,40 @@ export default function ImportForm({ onImported }: { onImported: () => void }) {
 
   async function getPreview() {
     setErr(null); setBusy(true);
-    const r = await fetch("/api/tracks/preview", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ url }) });
-    setBusy(false);
-    if (!r.ok) { setErr("Không lấy được preview"); return; }
-    const p = await r.json() as Preview;
-    setPreview(p);
-    setForm({ title: p.title, artist: p.artist ?? "", thumbnail_url: p.thumbnail ?? "" });
+    try {
+      const r = await fetch("/api/tracks/preview", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ url }) });
+      if (!r.ok) { setErr("Không lấy được preview"); return; }
+      const p = await r.json() as Preview;
+      setPreview(p);
+      setForm({ title: p.title, artist: p.artist ?? "", thumbnail_url: p.thumbnail ?? "" });
+    } catch {
+      setErr("Lỗi kết nối");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function submit() {
     if (!preview) return;
     setErr(null); setBusy(true);
-    const r = await fetch("/api/tracks", {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        url: preview.source_url,
-        title: form.title,
-        artist: form.artist || null,
-        thumbnail_url: form.thumbnail_url || null,
-      }),
-    });
-    setBusy(false);
-    if (!r.ok) { setErr("Lỗi"); return; }
-    setUrl(""); setPreview(null); setForm({ title: "", artist: "", thumbnail_url: "" });
-    onImported();
+    try {
+      const r = await fetch("/api/tracks", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          url: preview.source_url,
+          title: form.title,
+          artist: form.artist || null,
+          thumbnail_url: form.thumbnail_url || null,
+        }),
+      });
+      if (!r.ok) { setErr("Lỗi"); return; }
+      setUrl(""); setPreview(null); setForm({ title: "", artist: "", thumbnail_url: "" });
+      onImported();
+    } catch {
+      setErr("Lỗi kết nối");
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (!preview) {

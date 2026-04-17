@@ -6,7 +6,9 @@ type Job = { id: string; status: string; error_message: string | null; created_a
 export default function JobHistory({ reloadFlag }: { reloadFlag: number }) {
   const [jobs, setJobs] = useState<Job[]>([]);
   useEffect(() => {
-    const load = () => fetch("/api/import-jobs").then(r => r.json()).then(d => setJobs(d.jobs));
+    const load = () => fetch("/api/import-jobs")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.jobs) setJobs(d.jobs); });
     load();
     const t = setInterval(load, 3000);
     return () => clearInterval(t);
