@@ -19,6 +19,8 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(sp.get("limit") || "100", 10), 500);
   const order = sp.get("order") || "added_at.desc";
   const [col, dir] = order.split(".");
+  const ALLOWED_ORDER_COLS = new Set(["added_at", "played_count", "title", "last_played_at"]);
+  if (!ALLOWED_ORDER_COLS.has(col)) return NextResponse.json({ error: "bad order" }, { status: 400 });
   const db = getServiceClient();
   const { data, error } = await db.from("tracks").select("*")
     .eq("status", "ready").order(col, { ascending: dir === "asc" }).limit(limit);
@@ -47,12 +49,13 @@ export async function POST(req: NextRequest) {
   }).select().single();
   if (error || !track) return NextResponse.json({ error: error?.message }, { status: 500 });
 
-  const { data: job } = await db.from("import_jobs").insert({
+  const { data: job, error: jobError } = await db.from("import_jobs").insert({
     track_id: track.id, source_url: src.url, status: "queued",
   }).select().single();
+  if (jobError || !job) return NextResponse.json({ error: jobError?.message ?? "job insert failed" }, { status: 500 });
 
   try {
-    await dispatchJob({ job_id: job!.id, track_id: track.id, source_url: src.url });
+    await dispatchJob({ job_id: job.id, track_id: track.id, source_url: src.url });
   } catch {
     // leave queued; cron will retry
   }

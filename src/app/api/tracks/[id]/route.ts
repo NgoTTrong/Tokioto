@@ -27,9 +27,10 @@ export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: stri
   const { id } = await ctx.params;
   const db = getServiceClient();
   const { data: track } = await db.from("tracks").select("r2_key").eq("id", id).maybeSingle();
-  if (track?.r2_key) {
-    try { await deleteObject(track.r2_key); } catch {}
-    try { await deleteObject(buildR2Key("thumbnail", id)); } catch {}
+  if (!track) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (track.r2_key) {
+    try { await deleteObject(track.r2_key); } catch (e) { console.error("R2 delete audio failed", id, e); }
+    try { await deleteObject(buildR2Key("thumbnail", id)); } catch (e) { console.error("R2 delete thumbnail failed", id, e); }
   }
   await db.from("tracks").delete().eq("id", id);
   return NextResponse.json({ ok: true });
