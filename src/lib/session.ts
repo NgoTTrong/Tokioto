@@ -13,7 +13,7 @@ export function signSession(sid: string, expiresInSeconds: number): Promise<stri
 
 export function verifySession(token: string): Promise<SessionPayload | null> {
   return new Promise((resolve) => {
-    jwt.verify(token, process.env.SESSION_SECRET!, (err, decoded) => {
+    jwt.verify(token, process.env.SESSION_SECRET!, { algorithms: ["HS256"] as jwt.Algorithm[] }, (err, decoded) => {
       if (err || !decoded) return resolve(null);
       resolve(decoded as SessionPayload);
     });

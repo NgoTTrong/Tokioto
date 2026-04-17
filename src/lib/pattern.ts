@@ -1,3 +1,5 @@
+import bcrypt from "bcryptjs";
+
 export function normalizePattern(seq: number[]): string {
   if (seq.length < 4) throw new Error("Pattern must connect at least 4 dots");
   const set = new Set<number>();
@@ -33,8 +35,6 @@ export function isValidPattern(seq: number[]): boolean {
   }
   return true;
 }
-
-import bcrypt from "bcryptjs";
 
 export async function hashPattern(seq: number[]): Promise<string> {
   return bcrypt.hash(normalizePattern(seq), 12);

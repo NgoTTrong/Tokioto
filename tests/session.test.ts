@@ -16,6 +16,11 @@ describe("session", () => {
     const bad = token.slice(0, -2) + "xx";
     expect(await verifySession(bad)).toBeNull();
   });
+  it("rejects expired token", async () => {
+    const token = await signSession("sid-exp", 1);
+    await new Promise((r) => setTimeout(r, 1100));
+    expect(await verifySession(token)).toBeNull();
+  });
   it("produces stable sha256 hash", () => {
     expect(sessionHash("abc")).toBe(sessionHash("abc"));
     expect(sessionHash("abc")).not.toBe(sessionHash("abd"));

@@ -20,6 +20,7 @@ async function main() {
   } else {
     await db.from("users").insert({ pattern_hash: hash });
   }
+  // Supabase requires a filter for delete; this dummy UUID matches no real session
   await db.from("sessions").delete().neq("id", "00000000-0000-0000-0000-000000000000");
   console.log("Pattern updated. All sessions revoked.");
 }

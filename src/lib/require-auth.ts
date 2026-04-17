@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionHash, verifySession } from "./session";
-import { getServiceClient } from "./db";
+import { sessionHash, verifySession } from "@/lib/session";
+import { getServiceClient } from "@/lib/db";
 
 export async function requireAuth(req: NextRequest): Promise<NextResponse | null> {
   const token = req.cookies.get("session")?.value;

@@ -49,6 +49,7 @@ export default function PatternLock({ onSubmit, disabled }: Props) {
     if (disabled) return;
     const hit = hitTest(e.clientX, e.clientY);
     if (hit === null) return;
+    (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
     setSeq([hit]);
     setDrawing(true);
   };
@@ -63,7 +64,13 @@ export default function PatternLock({ onSubmit, disabled }: Props) {
     if (!drawing) return;
     setDrawing(false);
     setPtr(null);
-    if (seq.length >= 4) onSubmit(seq);
+    setSeq((current) => {
+      if (current.length >= 4) {
+        // Use setTimeout to call onSubmit outside the state updater
+        setTimeout(() => onSubmit(current), 0);
+      }
+      return current;
+    });
     setTimeout(() => setSeq([]), 400);
   };
 
@@ -91,9 +98,7 @@ export default function PatternLock({ onSubmit, disabled }: Props) {
         const p = dotPos(i);
         const active = seq.includes(i);
         return (
-          <g key={i}>
-            <circle cx={p.x} cy={p.y} r={active ? 14 : 10} fill={active ? "white" : "rgba(255,255,255,0.4)"} />
-          </g>
+          <circle key={i} cx={p.x} cy={p.y} r={active ? 14 : 10} fill={active ? "white" : "rgba(255,255,255,0.4)"} />
         );
       })}
     </svg>

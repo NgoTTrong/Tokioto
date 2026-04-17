@@ -10,6 +10,9 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Note: middleware only validates JWT signature (fast path).
+  // Full session revocation (DB check) is enforced per-handler via requireAuth().
+  // Every API route handler MUST call requireAuth() — middleware alone is not enough.
   const token = req.cookies.get("session")?.value;
   const payload = token ? await verifySession(token) : null;
   if (!payload) {
