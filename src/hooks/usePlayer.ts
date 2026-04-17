@@ -7,13 +7,14 @@ type PlayerState = {
   queue: Track[];
   index: number;
   isPlaying: boolean;
+  loop: boolean;
   currentTime: number;
   duration: number;
 };
 
 export function usePlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [state, setState] = useState<PlayerState>({ queue: [], index: 0, isPlaying: false, currentTime: 0, duration: 0 });
+  const [state, setState] = useState<PlayerState>({ queue: [], index: 0, isPlaying: false, loop: false, currentTime: 0, duration: 0 });
   const current = state.queue[state.index];
 
   useEffect(() => {
@@ -36,8 +37,9 @@ export function usePlayer() {
 
   useEffect(() => {
     const a = audioRef.current; if (!a) return;
+    a.loop = state.loop;
     if (state.isPlaying) a.play().catch(() => {}); else a.pause();
-  }, [state.isPlaying]);
+  }, [state.isPlaying, state.loop]);
 
   const setQueue = useCallback((tracks: Track[], startIndex = 0) => {
     setState(s => ({ ...s, queue: tracks, index: startIndex, isPlaying: true, currentTime: 0 }));
@@ -49,6 +51,7 @@ export function usePlayer() {
   const prev = useCallback(() => setState(s => s.index > 0 ? { ...s, index: s.index - 1 } : s), []);
   const seek = useCallback((t: number) => { if (audioRef.current) audioRef.current.currentTime = t; }, []);
   const moveTo = useCallback((i: number) => setState(s => ({ ...s, index: i })), []);
+  const setLoop = useCallback((v: boolean) => setState(s => ({ ...s, loop: v })), []);
 
-  return useMemo(() => ({ ...state, current, setQueue, play, pause, toggle, next, prev, seek, moveTo }), [state, current, setQueue, play, pause, toggle, next, prev, seek, moveTo]);
+  return useMemo(() => ({ ...state, current, setQueue, play, pause, toggle, next, prev, seek, moveTo, setLoop }), [state, current, setQueue, play, pause, toggle, next, prev, seek, moveTo, setLoop]);
 }

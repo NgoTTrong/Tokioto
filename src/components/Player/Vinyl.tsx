@@ -11,7 +11,8 @@ export default function Vinyl({ src, playing }: { src: string | null; playing: b
           backgroundImage: src ? `url(${src})` : undefined,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          animation: playing ? "vinyl-spin 12s linear infinite" : "none",
+          animation: "vinyl-spin 12s linear infinite",
+          animationPlayState: playing ? "running" : "paused",
         }}
       >
         <div

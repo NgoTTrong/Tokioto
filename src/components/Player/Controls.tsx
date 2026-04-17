@@ -15,11 +15,13 @@ export default function Controls(p: Props) {
   const fill = p.accent ?? "#ffffff";
   return (
     <div className="w-full">
-      <div className="h-[3px] w-full bg-white/25 rounded overflow-hidden" onClick={(e) => {
+      <div className="h-5 w-full flex items-center cursor-pointer" onClick={(e) => {
         const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
         p.onSeek(((e.clientX - rect.left) / rect.width) * p.duration);
       }}>
-        <div style={{ width: `${pct}%`, background: fill }} className="h-full" />
+        <div className="h-[3px] w-full bg-white/25 rounded overflow-hidden pointer-events-none">
+          <div style={{ width: `${pct}%`, background: fill }} className="h-full" />
+        </div>
       </div>
       <div className="flex justify-between text-[10px] opacity-70 mt-1 mb-4"><span>{fmt(p.currentTime)}</span><span>-{fmt(Math.max(0, p.duration - p.currentTime))}</span></div>
       <div className="flex justify-around items-center">

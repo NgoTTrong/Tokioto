@@ -14,7 +14,6 @@ function PlayerInner() {
   const router = useRouter();
   const p = usePlayer();
   const [shuffle, setShuffle] = useState(false);
-  const [loop, setLoop] = useState(false);
 
   useEffect(() => {
     const track = sp.get("track");
@@ -30,9 +29,12 @@ function PlayerInner() {
       } else {
         const one = await fetch(`/api/tracks?limit=500`).then(r => r.json());
         tracks = (one.tracks as Track[]);
-        startIndex = tracks.findIndex(t => t.id === track);
+        startIndex = Math.max(0, tracks.findIndex(t => t.id === track));
       }
-      if (shuffle) tracks = shuffleFrom(tracks, startIndex);
+      if (shuffle) {
+        tracks = shuffleFrom(tracks, startIndex);
+        startIndex = 0;
+      }
       p.setQueue(tracks, startIndex);
       fetch(`/api/tracks/${track}/play`, { method: "POST" }).catch(() => {});
     };
@@ -71,7 +73,7 @@ function PlayerInner() {
           onPlayPause={p.toggle} onNext={p.next} onPrev={p.prev} onSeek={p.seek}
           accent={p.current.accent_color}
           shuffle={shuffle} onShuffle={() => setShuffle(v => !v)}
-          loop={loop} onLoop={() => setLoop(v => !v)}
+          loop={p.loop} onLoop={() => p.setLoop(!p.loop)}
         />
       </div>
 
