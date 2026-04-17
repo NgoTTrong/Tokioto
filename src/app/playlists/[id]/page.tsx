@@ -6,6 +6,7 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEn
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import TrackCard from "@/components/Library/TrackCard";
+import OfflineButton from "@/components/Playlist/OfflineButton";
 
 export default function PlaylistDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -37,6 +38,7 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
   return (
     <main className="p-4 pt-8 flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">{name}</h1>
+      {!smart && <OfflineButton ids={tracks.map(t => t.id)} />}
       {!smart ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
           <SortableContext items={tracks.map(t => t.id)} strategy={verticalListSortingStrategy}>

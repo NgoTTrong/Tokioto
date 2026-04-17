@@ -29,9 +29,17 @@ export function usePlayer() {
   }, []);
 
   useEffect(() => {
-    const a = audioRef.current; if (!a || !current) return;
-    a.src = `/api/tracks/${current.id}/stream`;
-    if (state.isPlaying) a.play().catch(() => {});
+    (async () => {
+      const a = audioRef.current; if (!a || !current) return;
+      try {
+        const { getCached } = await import("@/hooks/useOfflineCache");
+        const cached = await getCached(current.id);
+        a.src = cached ? URL.createObjectURL(await cached.blob()) : `/api/tracks/${current.id}/stream`;
+      } catch {
+        a.src = `/api/tracks/${current.id}/stream`;
+      }
+      if (state.isPlaying) a.play().catch(() => {});
+    })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.id]);
 
