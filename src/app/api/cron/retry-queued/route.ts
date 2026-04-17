@@ -9,11 +9,15 @@ export async function GET(req: NextRequest) {
   }
   const db = getServiceClient();
   const cutoff = new Date(Date.now() - 2 * 60 * 1000).toISOString();
-  const { data: jobs, error } = await db.from("import_jobs")
-    .select("*").eq("status", "queued").lt("created_at", cutoff).limit(20);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const { data: jobs, error: jobsError } = await db.from("import_jobs")
+    .select("*").eq("status", "queued").lt("queued_at", cutoff).limit(20);
+  if (jobsError) return NextResponse.json({ error: jobsError.message }, { status: 500 });
+  let dispatched = 0;
   for (const j of jobs ?? []) {
-    try { await dispatchJob({ job_id: j.id, track_id: j.track_id, source_url: j.source_url }); } catch {}
+    try {
+      await dispatchJob({ job_id: j.id, track_id: j.track_id, source_url: j.source_url });
+      dispatched++;
+    } catch {}
   }
-  return NextResponse.json({ retried: jobs?.length ?? 0 });
+  return NextResponse.json({ attempted: jobs?.length ?? 0, dispatched });
 }
