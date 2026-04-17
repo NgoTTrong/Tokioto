@@ -47,18 +47,21 @@ async def extract_and_upload(job_id: str, track_id: str, source_url: str):
 
             thumb_url = info.get("thumbnail")
             accent = None
+            thumbnail_uploaded = False
             if thumb_url:
                 async with httpx.AsyncClient(timeout=30) as http:
                     r = await http.get(thumb_url)
                     if r.status_code == 200:
                         await upload_thumbnail(track_id, r.content)
                         accent = _extract_color(r.content)
+                        thumbnail_uploaded = True
 
         await set_track_ready(track_id, {
             "duration_sec": int(info.get("duration") or 0),
             "title_fallback": info.get("title"),
             "artist_fallback": info.get("uploader"),
             "accent_color": accent,
+            "thumbnail_uploaded": thumbnail_uploaded,
         })
         await set_job_done(job_id)
     except Exception as e:
