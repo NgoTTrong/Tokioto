@@ -48,7 +48,7 @@ export default function Library() {
 
   const virtualizer = useWindowVirtualizer({
     count: tracks?.length ?? 0,
-    estimateSize: () => 92,
+    estimateSize: () => 88,
     overscan: 8,
     scrollMargin,
   });
@@ -100,7 +100,7 @@ export default function Library() {
                   left: 0,
                   width: "100%",
                   transform: `translateY(${item.start - scrollMargin}px)`,
-                  paddingBottom: "12px",
+                  paddingBottom: "8px",
                 }}
               >
                 <TrackCard
