@@ -1,9 +1,9 @@
 import { requireAuth } from "@/lib/require-auth";
 import { getServiceClient } from "@/lib/db";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
   const authErr = await requireAuth(req);
