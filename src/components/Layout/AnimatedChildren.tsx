@@ -5,14 +5,22 @@ import { ReactNode } from "react";
 export default function AnimatedChildren({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isPlayer = pathname.startsWith("/player");
+  const isFullscreen = pathname === "/login" || pathname === "/setup";
 
   return (
     <div
-      key={pathname}
-      className={isPlayer ? "" : "page-enter"}
-      style={{ minHeight: "100%" }}
+      className={[
+        !isFullscreen ? "md:ml-[220px]" : "",
+        !isFullscreen ? "pb-40 md:pb-[96px]" : "",
+      ].join(" ")}
     >
-      {children}
+      <div
+        key={pathname}
+        className={isPlayer ? "" : "page-enter"}
+        style={{ minHeight: "100%" }}
+      >
+        {children}
+      </div>
     </div>
   );
 }

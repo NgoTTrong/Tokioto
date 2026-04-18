@@ -19,9 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PlayerProvider>
           <Sidebar />
           {/* Content area — shifts right on desktop to make room for sidebar */}
-          <div className="md:ml-[220px] pb-40 md:pb-[96px]">
-            <AnimatedChildren>{children}</AnimatedChildren>
-          </div>
+          <AnimatedChildren>{children}</AnimatedChildren>
           <MiniPlayer />
           <TabBar />
         </PlayerProvider>
