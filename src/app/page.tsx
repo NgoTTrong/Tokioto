@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Track } from "@/types";
 import TrackCard from "@/components/Library/TrackCard";
+import logoImg from "@/../public/logo.png";
 
 function TrackSkeleton() {
   return (
@@ -34,7 +35,8 @@ export default function Library() {
     <main className="p-4 pt-10 pb-24 md:px-8 md:pt-12 md:pb-10 min-h-screen bg-[#09090b] max-w-4xl">
       <div className="flex items-center gap-3 mb-1">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="" className="w-9 h-9 object-contain md:hidden" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logoImg.src} alt="" className="w-9 h-9 object-contain md:hidden" />
         <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
           Tokioto
         </h1>

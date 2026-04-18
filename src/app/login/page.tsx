@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PatternLock from "@/components/Auth/PatternLock";
+import logoImg from "@/../public/logo.png";
 
 export default function Login() {
   const [err, setErr] = useState<string | null>(null);
@@ -35,7 +36,8 @@ export default function Login() {
       <div className="relative flex flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-3 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Tokioto" width={72} height={72} className="drop-shadow-[0_0_24px_rgba(168,85,247,0.5)]" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logoImg.src} alt="Tokioto" width={72} height={72} className="drop-shadow-[0_0_24px_rgba(168,85,247,0.5)]" />
           <div>
             <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-fuchsia-300 to-pink-400 bg-clip-text text-transparent mb-2">
               Tokioto

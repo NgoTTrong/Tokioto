@@ -34,10 +34,23 @@ function statusColor(status: string): string {
   return "text-white/60";
 }
 
+function JobSkeleton() {
+  return (
+    <li className="rounded-xl bg-white/[0.04] border border-white/[0.07] p-3 flex items-center gap-3">
+      <div className="w-10 h-10 rounded-lg flex-shrink-0 bg-white/[0.07] animate-pulse" />
+      <div className="flex-1 space-y-2">
+        <div className="h-3.5 rounded-full bg-white/[0.07] animate-pulse w-2/3" />
+        <div className="h-3 rounded-full bg-white/[0.05] animate-pulse w-1/3" />
+      </div>
+    </li>
+  );
+}
+
 export default function JobHistory({ reloadFlag }: { reloadFlag: number }) {
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<Job[] | null>(null);
 
   useEffect(() => {
+    setJobs(null);
     const load = () =>
       fetch("/api/import-jobs")
         .then((r) => (r.ok ? r.json() : null))
@@ -50,13 +63,21 @@ export default function JobHistory({ reloadFlag }: { reloadFlag: number }) {
   }, [reloadFlag]);
 
   const deleteJob = async (id: string) => {
-    setJobs((prev) => prev.filter((j) => j.id !== id));
+    setJobs((prev) => prev ? prev.filter((j) => j.id !== id) : prev);
     await fetch(`/api/import-jobs/${id}`, { method: "DELETE" });
   };
 
   const retry = async (id: string) => {
     await fetch(`/api/import-jobs/${id}/retry`, { method: "POST" });
   };
+
+  if (jobs === null) {
+    return (
+      <ul className="flex flex-col gap-2">
+        {[0, 1, 2].map((i) => <JobSkeleton key={i} />)}
+      </ul>
+    );
+  }
 
   return (
     <ul className="flex flex-col gap-2">

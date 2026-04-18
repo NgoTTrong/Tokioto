@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Library, ListMusic, PlusCircle } from "lucide-react";
+import logoImg from "@/../public/logo.png";
 
 const TABS = [
   { href: "/", label: "Tokioto", Icon: Library },
@@ -21,7 +22,8 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-5 py-5 flex items-center gap-2.5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="Tokioto" width={34} height={34} className="flex-shrink-0" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logoImg.src} alt="Tokioto" width={34} height={34} className="flex-shrink-0" />
         <span className="font-bold text-[17px] tracking-tight bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
           Tokioto
         </span>

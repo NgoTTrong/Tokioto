@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ListMusic, PlusCircle } from "lucide-react";
+import logoImg from "@/../public/logo.png";
 
 const TABS = [
   { href: "/", label: "Tokioto", logo: true },
@@ -28,7 +29,7 @@ export default function TabBar() {
             {"logo" in t ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
-                src="/logo.png"
+                src={logoImg.src}
                 alt="Tokioto"
                 className={`w-[22px] h-[22px] object-contain transition-all duration-200 ${
                   active ? "drop-shadow-[0_0_6px_rgba(168,85,247,0.8)]" : "opacity-40"
