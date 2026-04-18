@@ -3,7 +3,7 @@
 
 export default function Vinyl({ src, playing }: { src: string | null; playing: boolean }) {
   return (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] md:w-[45%] aspect-square">
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[55%] w-[min(72vw,62vh)] md:w-[min(38vw,58vh,520px)] aspect-square">
       <style dangerouslySetInnerHTML={{ __html: `@keyframes vinyl-spin { to { transform: rotate(360deg); } }` }} />
       <div
         className="w-full h-full rounded-full relative shadow-[0_30px_70px_rgba(0,0,0,0.7)] overflow-hidden"

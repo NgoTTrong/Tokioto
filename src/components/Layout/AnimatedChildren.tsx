@@ -10,7 +10,7 @@ export default function AnimatedChildren({ children }: { children: ReactNode }) 
   return (
     <div
       className={[
-        !isFullscreen ? "md:ml-[220px]" : "",
+        !isFullscreen ? "md:ml-[var(--sidebar-w)] md:transition-[margin-left] md:duration-200 md:ease-out" : "",
         !isFullscreen ? "pb-40 md:pb-[96px]" : "",
       ].join(" ")}
     >

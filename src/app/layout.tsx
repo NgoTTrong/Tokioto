@@ -15,6 +15,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try { var c = localStorage.getItem("tokioto:sidebar-collapsed") === "1"; document.documentElement.style.setProperty("--sidebar-w", c ? "72px" : "220px"); } catch(e) {}`,
+          }}
+        />
+      </head>
       <body className="bg-[#09090b] text-white min-h-screen">
         <PlayerProvider>
           <Sidebar />

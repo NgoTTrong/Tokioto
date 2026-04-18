@@ -120,7 +120,7 @@ export default function MiniPlayer() {
 
       {/* ─── Desktop: full bottom bar ─── */}
       <div
-        className="hidden md:flex fixed bottom-0 left-[220px] right-0 h-[80px] z-20 items-center px-6 gap-6 border-t border-white/[0.06]"
+        className="hidden md:flex fixed bottom-0 left-[var(--sidebar-w)] right-0 h-[80px] z-20 items-center px-6 gap-6 border-t border-white/[0.06] transition-[left] duration-200 ease-out"
         style={{ background: "rgba(8,8,10,0.97)", backdropFilter: "blur(24px)" }}
       >
         {/* Track info */}

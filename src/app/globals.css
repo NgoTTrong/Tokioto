@@ -3,6 +3,7 @@
 :root {
   --background: #09090b;
   --foreground: #fafafa;
+  --sidebar-w: 220px;
 }
 
 @theme inline {
@@ -93,4 +94,13 @@ body {
   from { transform: translateY(100%); }
   to   { transform: translateY(0); }
 }
-.animate-sheet-up { animation: sheet-up 0.3s cubic-bezier(0.32, 0.72, 0, 1) both; }
+@keyframes sheet-down {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+@keyframes backdrop-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+.animate-sheet-up   { animation: sheet-up   0.48s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-sheet-down { animation: sheet-down 0.38s cubic-bezier(0.55, 0, 0.65, 1) both; }
+.animate-backdrop-in  { animation: backdrop-in  0.32s ease-out both; }
+.animate-backdrop-out { animation: backdrop-out 0.32s ease-out both; }

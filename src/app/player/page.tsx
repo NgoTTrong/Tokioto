@@ -60,7 +60,7 @@ function PlayerInner() {
   })();
 
   return (
-    <main className="fixed inset-0 md:left-[220px] md:bottom-[80px] overflow-hidden text-white page-slide-up z-30">
+    <main className="fixed inset-0 md:left-[var(--sidebar-w)] md:transition-[left] md:duration-200 md:ease-out overflow-hidden text-white page-slide-up z-30">
       {/* Background */}
       {bg
         ? <img src={bg} alt="" className="absolute inset-0 w-full h-full object-cover scale-110 blur-sm" />
