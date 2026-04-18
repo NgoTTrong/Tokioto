@@ -9,11 +9,23 @@ import { CSS } from "@dnd-kit/utilities";
 import TrackCard from "@/components/Library/TrackCard";
 import OfflineButton from "@/components/Playlist/OfflineButton";
 
+function TrackSkeleton() {
+  return (
+    <div className="flex items-center gap-3 w-full p-3 rounded-2xl bg-white/[0.04] border border-white/[0.06]">
+      <div className="w-[56px] h-[56px] rounded-xl bg-white/[0.07] animate-pulse flex-shrink-0" />
+      <div className="flex-1 space-y-2">
+        <div className="h-3.5 rounded-full bg-white/[0.07] animate-pulse w-3/4" />
+        <div className="h-3 rounded-full bg-white/[0.05] animate-pulse w-1/2" />
+      </div>
+    </div>
+  );
+}
+
 export default function PlaylistDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id: rawId } = use(params);
   const id = decodeURIComponent(rawId);
   const router = useRouter();
-  const [tracks, setTracks] = useState<Track[]>([]);
+  const [tracks, setTracks] = useState<Track[] | null>(null);
   const [name, setName] = useState("");
   const [smart, setSmart] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
@@ -28,7 +40,7 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
   useEffect(() => { load(); }, [load]);
 
   async function onDragEnd(e: DragEndEvent) {
-    if (!e.over || e.active.id === e.over.id) return;
+    if (!e.over || e.active.id === e.over.id || !tracks) return;
     const oldIdx = tracks.findIndex(t => t.id === e.active.id);
     const newIdx = tracks.findIndex(t => t.id === e.over!.id);
     const next = arrayMove(tracks, oldIdx, newIdx);
@@ -50,15 +62,27 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
           {tracks.length > 0 && <p className="text-white/30 text-xs mt-0.5">{tracks.length} bài hát</p>}
         </div>
       </div>
-      {!smart && <OfflineButton ids={tracks.map(t => t.id)} />}
-      {!smart ? (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-          <SortableContext items={tracks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-            {tracks.map(t => <SortableRow key={t.id} track={t} onPlay={() => router.push(`/player?track=${t.id}&playlist=${encodeURIComponent(id)}`)} />)}
-          </SortableContext>
-        </DndContext>
+      {tracks === null ? (
+        <div className="flex flex-col gap-2">
+          {[0,1,2,3].map(i => (
+            <div key={i} style={{ animationDelay: `${i * 60}ms` }}>
+              <TrackSkeleton />
+            </div>
+          ))}
+        </div>
       ) : (
-        tracks.map(t => <TrackCard key={t.id} track={t} onPlay={() => router.push(`/player?track=${t.id}&playlist=${encodeURIComponent(id)}`)} />)
+        <>
+          {!smart && <OfflineButton ids={tracks.map(t => t.id)} />}
+          {!smart ? (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+              <SortableContext items={tracks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                {tracks.map(t => <SortableRow key={t.id} track={t} onPlay={() => router.push(`/player?track=${t.id}&playlist=${encodeURIComponent(id)}`)} />)}
+              </SortableContext>
+            </DndContext>
+          ) : (
+            tracks.map(t => <TrackCard key={t.id} track={t} onPlay={() => router.push(`/player?track=${t.id}&playlist=${encodeURIComponent(id)}`)} />)
+          )}
+        </>
       )}
     </main>
   );

@@ -8,7 +8,13 @@ type WithThumbs = Playlist & { thumbs: (string | null)[] };
 function PlaylistSkeleton() {
   return (
     <div className="flex flex-col gap-2">
-      <div className="aspect-square rounded-xl bg-white/[0.07] animate-pulse" />
+      <div className="aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-white/[0.06]">
+        <div className="grid grid-cols-2 w-full h-full">
+          {[0,1,2,3].map(i => (
+            <div key={i} className="bg-white/[0.04] animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />
+          ))}
+        </div>
+      </div>
       <div className="h-3.5 rounded-full bg-white/[0.06] animate-pulse w-3/4" />
     </div>
   );

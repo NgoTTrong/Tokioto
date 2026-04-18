@@ -71,7 +71,7 @@ export default function Library() {
       <div className="flex flex-col gap-2">
         {tracks?.map((t, i) => (
           <div key={t.id} className="animate-fade-in-up" style={{ animationDelay: `${i * 40}ms` }}>
-            <TrackCard track={t} onPlay={() => router.push(`/player?track=${t.id}`)} />
+            <TrackCard track={t} onPlay={() => router.push(`/player?track=${t.id}`)} showAddToPlaylist />
           </div>
         ))}
       </div>
