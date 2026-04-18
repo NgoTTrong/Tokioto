@@ -12,13 +12,29 @@ export async function GET(req: NextRequest) {
   const { data } = await db.from("playlists").select("*").order("created_at", { ascending: false });
   const { count: trackCount } = await db.from("tracks").select("id", { count: "exact", head: true }).eq("status", "ready");
   const { data: artistRows } = await db.from("tracks").select("artist").eq("status", "ready").not("artist", "is", null);
-  const artists = [...new Set((artistRows ?? []).map(r => r.artist as string).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+
+  // Group by normalized key (trim + collapse spaces + lowercase) → pick most frequent display name
+  const nameMap = new Map<string, Map<string, number>>();
+  for (const row of artistRows ?? []) {
+    const raw = (row.artist as string | null)?.trim().replace(/\s+/g, " ");
+    if (!raw) continue;
+    const key = raw.toLowerCase().normalize("NFC");
+    if (!nameMap.has(key)) nameMap.set(key, new Map());
+    const freq = nameMap.get(key)!;
+    freq.set(raw, (freq.get(raw) ?? 0) + 1);
+  }
+  const artistPlaylists = [...nameMap.entries()]
+    .map(([key, freq]) => {
+      const displayName = [...freq.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      return { id: `smart:artist:${key}`, name: displayName, smart: true };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, "vi"));
+
   const smart = [
     { id: "smart:all", name: "All songs", smart: true, count: trackCount ?? 0 },
     { id: "smart:recent", name: "Recently added", smart: true },
     { id: "smart:most-played", name: "Most played", smart: true },
   ];
-  const artistPlaylists = artists.map(a => ({ id: `smart:artist:${a}`, name: a, smart: true }));
   return NextResponse.json({ playlists: data ?? [], smart, artists: artistPlaylists });
 }
 

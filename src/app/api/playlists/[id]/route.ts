@@ -17,8 +17,9 @@ async function resolveSmart(id: string) {
   if (id === "smart:recent") return (await q.order("added_at", { ascending: false }).limit(50)).data ?? [];
   if (id === "smart:most-played") return (await q.gt("played_count", 0).order("played_count", { ascending: false }).limit(50)).data ?? [];
   if (id.startsWith("smart:artist:")) {
-    const artist = decodeURIComponent(id.slice("smart:artist:".length));
-    return (await q.eq("artist", artist).order("title")).data ?? [];
+    const key = decodeURIComponent(id.slice("smart:artist:".length)); // normalized lowercase key
+    const all = (await q.order("title")).data ?? [];
+    return all.filter(t => t.artist?.trim().replace(/\s+/g, " ").toLowerCase().normalize("NFC") === key);
   }
   return null;
 }
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       "smart:most-played": "Most played",
     };
     const name = id.startsWith("smart:artist:")
-      ? decodeURIComponent(id.slice("smart:artist:".length))
+      ? (tracks[0]?.artist?.trim().replace(/\s+/g, " ") ?? decodeURIComponent(id.slice("smart:artist:".length)))
       : (SMART_NAMES[id] ?? id);
     return NextResponse.json({ playlist: { id, name, smart: true }, tracks });
   }
