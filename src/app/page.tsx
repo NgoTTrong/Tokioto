@@ -62,7 +62,7 @@ export default function Library() {
           Tokioto
         </h1>
       </div>
-      <p className="text-white/30 text-xs mb-7">
+      <p className="text-white/30 text-xs mb-4">
         {tracks === null ? "Đang tải…" : `${tracks.length} bài hát`}
       </p>
 
