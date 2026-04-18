@@ -11,12 +11,15 @@ export async function GET(req: NextRequest) {
   const db = getServiceClient();
   const { data } = await db.from("playlists").select("*").order("created_at", { ascending: false });
   const { count: trackCount } = await db.from("tracks").select("id", { count: "exact", head: true }).eq("status", "ready");
+  const { data: artistRows } = await db.from("tracks").select("artist").eq("status", "ready").not("artist", "is", null);
+  const artists = [...new Set((artistRows ?? []).map(r => r.artist as string).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   const smart = [
     { id: "smart:all", name: "All songs", smart: true, count: trackCount ?? 0 },
     { id: "smart:recent", name: "Recently added", smart: true },
     { id: "smart:most-played", name: "Most played", smart: true },
   ];
-  return NextResponse.json({ playlists: data ?? [], smart });
+  const artistPlaylists = artists.map(a => ({ id: `smart:artist:${a}`, name: a, smart: true }));
+  return NextResponse.json({ playlists: data ?? [], smart, artists: artistPlaylists });
 }
 
 export async function POST(req: NextRequest) {

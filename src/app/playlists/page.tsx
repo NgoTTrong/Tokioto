@@ -23,6 +23,7 @@ function PlaylistSkeleton() {
 export default function Playlists() {
   const [user, setUser] = useState<WithThumbs[] | null>(null);
   const [smart, setSmart] = useState<WithThumbs[] | null>(null);
+  const [artists, setArtists] = useState<WithThumbs[] | null>(null);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
 
@@ -35,6 +36,7 @@ export default function Playlists() {
     };
     setUser(await Promise.all((d.playlists as Playlist[]).map(hydrate)));
     setSmart(await Promise.all((d.smart as Playlist[]).map(hydrate)));
+    setArtists(await Promise.all((d.artists as Playlist[]).map(hydrate)));
   }
 
   useEffect(() => { load(); }, []);
@@ -85,6 +87,21 @@ export default function Playlists() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {smart.map(p => <PlaylistCard key={p.id} id={p.id} name={p.name} thumbs={p.thumbs} smart />)}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h2 className="text-[11px] uppercase tracking-[0.15em] text-white/40 mb-3">Nghệ sĩ</h2>
+        {artists === null ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {[0, 1, 2, 3].map(i => <PlaylistSkeleton key={i} />)}
+          </div>
+        ) : artists.length === 0 ? (
+          <p className="text-white/25 text-xs">Chưa có nghệ sĩ nào.</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {artists.map(p => <PlaylistCard key={p.id} id={p.id} name={p.name} thumbs={p.thumbs} smart />)}
           </div>
         )}
       </section>

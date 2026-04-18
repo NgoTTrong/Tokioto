@@ -16,6 +16,10 @@ async function resolveSmart(id: string) {
   if (id === "smart:all") return (await q.order("title")).data ?? [];
   if (id === "smart:recent") return (await q.order("added_at", { ascending: false }).limit(50)).data ?? [];
   if (id === "smart:most-played") return (await q.gt("played_count", 0).order("played_count", { ascending: false }).limit(50)).data ?? [];
+  if (id.startsWith("smart:artist:")) {
+    const artist = decodeURIComponent(id.slice("smart:artist:".length));
+    return (await q.eq("artist", artist).order("title")).data ?? [];
+  }
   return null;
 }
 
@@ -31,7 +35,10 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       "smart:recent": "Recently added",
       "smart:most-played": "Most played",
     };
-    return NextResponse.json({ playlist: { id, name: SMART_NAMES[id] ?? id, smart: true }, tracks });
+    const name = id.startsWith("smart:artist:")
+      ? decodeURIComponent(id.slice("smart:artist:".length))
+      : (SMART_NAMES[id] ?? id);
+    return NextResponse.json({ playlist: { id, name, smart: true }, tracks });
   }
   const db = getServiceClient();
   const { data: pl } = await db.from("playlists").select("*").eq("id", id).maybeSingle();
