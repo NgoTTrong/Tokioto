@@ -10,10 +10,6 @@ export const metadata: Metadata = {
   title: "Tokioto",
   description: "Personal music",
   manifest: "/manifest.json",
-  icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

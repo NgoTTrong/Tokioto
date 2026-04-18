@@ -55,6 +55,8 @@ tokioto-tmp/
 *.png
 !public/**/*.png
 !public/icons/*.png
+!src/app/icon.png
+!src/app/apple-icon.png
 
 # worker runtime
 worker/cookies.txt
