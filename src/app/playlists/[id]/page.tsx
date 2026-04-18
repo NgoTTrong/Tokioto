@@ -2,12 +2,14 @@
 import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Track } from "@/types";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, GripVertical, Trash2 } from "lucide-react";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import TrackCard from "@/components/Library/TrackCard";
 import OfflineButton from "@/components/Playlist/OfflineButton";
+import ConfirmDialog from "@/components/UI/ConfirmDialog";
+import { Toaster, useToast } from "@/components/UI/Toast";
 
 function TrackSkeleton() {
   return (
@@ -28,7 +30,11 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
   const [tracks, setTracks] = useState<Track[] | null>(null);
   const [name, setName] = useState("");
   const [smart, setSmart] = useState(false);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+  const [removeTrack, setRemoveTrack] = useState<Track | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const toast = useToast();
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   const load = useCallback(async () => {
     const d = await fetch(`/api/playlists/${encodeURIComponent(id)}`).then(r => r.json());
@@ -51,8 +57,38 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
     });
   }
 
+  async function confirmRemoveTrack() {
+    if (!removeTrack || !tracks) return;
+    const target = removeTrack;
+    setBusy(true);
+    const res = await fetch(
+      `/api/playlists/${encodeURIComponent(id)}/tracks/${target.id}`,
+      { method: "DELETE" }
+    );
+    setBusy(false);
+    if (!res.ok) {
+      toast.error("Xoá thất bại");
+      return;
+    }
+    setTracks(tracks.filter(t => t.id !== target.id));
+    setRemoveTrack(null);
+    toast.success(`Đã xoá "${target.title}"`);
+  }
+
+  async function confirmDeletePlaylist() {
+    setBusy(true);
+    const res = await fetch(`/api/playlists/${encodeURIComponent(id)}`, { method: "DELETE" });
+    setBusy(false);
+    if (!res.ok) {
+      toast.error("Xoá playlist thất bại");
+      setDeleteOpen(false);
+      return;
+    }
+    router.push("/playlists");
+  }
+
   return (
-    <main className="p-4 pt-10 pb-24 md:px-8 md:pt-12 md:pb-10 min-h-screen bg-[#09090b] flex flex-col gap-4 page-enter-right max-w-4xl">
+    <main className="p-4 pt-10 pb-24 md:px-8 md:pt-12 md:pb-10 min-h-screen bg-[#09090b] flex flex-col gap-4 page-enter-right max-w-4xl mx-auto w-full">
       <div className="flex items-center gap-3">
         <button onClick={() => router.back()} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/[0.10] transition-colors text-white/60 hover:text-white flex-shrink-0">
           <ChevronLeft size={18} />
@@ -61,6 +97,15 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
           <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent truncate">{name || "…"}</h1>
           {tracks && tracks.length > 0 && <p className="text-white/30 text-xs mt-0.5">{tracks.length} bài hát</p>}
         </div>
+        {!smart && tracks !== null && (
+          <button
+            onClick={() => setDeleteOpen(true)}
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/[0.04] hover:bg-red-500/15 border border-white/[0.06] hover:border-red-500/40 text-white/50 hover:text-red-400 transition-colors flex-shrink-0"
+            title="Xoá playlist"
+          >
+            <Trash2 size={16} />
+          </button>
+        )}
       </div>
       {tracks === null ? (
         <div className="flex flex-col gap-2">
@@ -76,7 +121,14 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
           {!smart ? (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
               <SortableContext items={tracks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-                {tracks.map(t => <SortableRow key={t.id} track={t} onPlay={() => router.push(`/player?track=${t.id}&playlist=${encodeURIComponent(id)}`)} />)}
+                {tracks.map(t => (
+                  <SortableRow
+                    key={t.id}
+                    track={t}
+                    onPlay={() => router.push(`/player?track=${t.id}&playlist=${encodeURIComponent(id)}`)}
+                    onRemove={() => setRemoveTrack(t)}
+                  />
+                ))}
               </SortableContext>
             </DndContext>
           ) : (
@@ -84,16 +136,58 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
           )}
         </>
       )}
+
+      <ConfirmDialog
+        open={removeTrack !== null}
+        title="Xoá khỏi playlist?"
+        message={removeTrack ? `"${removeTrack.title}" sẽ bị xoá khỏi playlist. Bài hát vẫn còn trong thư viện.` : ""}
+        confirmText="Xoá"
+        destructive
+        loading={busy}
+        onConfirm={confirmRemoveTrack}
+        onCancel={() => setRemoveTrack(null)}
+      />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        title="Xoá playlist?"
+        message={`Playlist "${name}" sẽ bị xoá vĩnh viễn. Các bài hát vẫn còn trong thư viện.`}
+        confirmText="Xoá playlist"
+        destructive
+        loading={busy}
+        onConfirm={confirmDeletePlaylist}
+        onCancel={() => setDeleteOpen(false)}
+      />
+
+      <Toaster toasts={toast.toasts} onRemove={toast.remove} />
     </main>
   );
 }
 
-function SortableRow({ track, onPlay }: { track: Track; onPlay: () => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: track.id });
-  const style = { transform: CSS.Transform.toString(transform), transition };
+function SortableRow({ track, onPlay, onRemove }: { track: Track; onPlay: () => void; onRemove: () => void }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: track.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  const handle = (
+    <button
+      ref={setActivatorNodeRef}
+      {...attributes}
+      {...listeners}
+      aria-label="Kéo để sắp xếp"
+      className="p-1.5 -ml-1 rounded-lg text-white/25 hover:text-white/70 hover:bg-white/[0.06] cursor-grab active:cursor-grabbing touch-none flex-shrink-0 transition-colors"
+    >
+      <GripVertical size={16} />
+    </button>
+  );
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <TrackCard track={track} onPlay={onPlay} />
+    <div ref={setNodeRef} style={style}>
+      <TrackCard track={track} onPlay={onPlay} onRemove={onRemove} dragHandle={handle} />
     </div>
   );
 }

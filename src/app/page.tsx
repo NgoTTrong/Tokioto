@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import type { Track } from "@/types";
 import TrackCard from "@/components/Library/TrackCard";
 import logoImg from "@/../public/logo.png";
 
-const POLL_INTERVAL = 10_000; // reduced from 3s to 10s
+const POLL_INTERVAL = 10_000;
 
 function TrackSkeleton() {
   return (
@@ -23,18 +23,24 @@ function TrackSkeleton() {
 export default function Library() {
   const [tracks, setTracks] = useState<Track[] | null>(null);
   const router = useRouter();
-  const listRef = useRef<HTMLDivElement>(null);
+
+  // Callback ref: measure offsetTop as soon as the list container mounts
+  const listNodeRef = useRef<HTMLDivElement | null>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+  const setListRef = useCallback((node: HTMLDivElement | null) => {
+    listNodeRef.current = node;
+    if (node) setScrollMargin(node.offsetTop);
+  }, []);
 
   useEffect(() => {
     const load = () => {
-      if (document.hidden) return; // skip poll when tab not visible
+      if (document.hidden) return;
       fetch("/api/tracks")
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => { if (d?.tracks) setTracks(d.tracks); });
     };
     load();
     const id = setInterval(load, POLL_INTERVAL);
-    // pause/resume polling on visibility change
     const onVisibility = () => { if (!document.hidden) load(); };
     document.addEventListener("visibilitychange", onVisibility);
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVisibility); };
@@ -42,13 +48,13 @@ export default function Library() {
 
   const virtualizer = useWindowVirtualizer({
     count: tracks?.length ?? 0,
-    estimateSize: () => 84, // TrackCard height + gap
+    estimateSize: () => 84,
     overscan: 8,
-    scrollMargin: listRef.current?.offsetTop ?? 0,
+    scrollMargin,
   });
 
   return (
-    <main className="p-4 pt-10 pb-24 md:px-8 md:pt-12 md:pb-10 min-h-screen bg-[#09090b] max-w-4xl">
+    <main className="p-4 pt-10 pb-24 md:px-8 md:pt-12 md:pb-10 min-h-screen bg-[#09090b] max-w-4xl mx-auto w-full">
       <div className="flex items-center gap-3 mb-1">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logoImg.src} alt="" className="w-9 h-9 object-contain md:hidden" />
@@ -83,7 +89,7 @@ export default function Library() {
       )}
 
       {tracks && tracks.length > 0 && (
-        <div ref={listRef}>
+        <div ref={setListRef}>
           <div style={{ height: `${virtualizer.getTotalSize()}px`, position: "relative" }}>
             {virtualizer.getVirtualItems().map((item) => (
               <div
@@ -93,7 +99,7 @@ export default function Library() {
                   top: 0,
                   left: 0,
                   width: "100%",
-                  transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)`,
+                  transform: `translateY(${item.start - scrollMargin}px)`,
                   paddingBottom: "8px",
                 }}
               >

@@ -44,7 +44,7 @@ export default function Playlists() {
   }
 
   return (
-    <main className="p-4 pt-10 pb-24 md:px-8 md:pt-12 md:pb-10 min-h-screen bg-[#09090b] flex flex-col gap-6 max-w-4xl">
+    <main className="p-4 pt-10 pb-24 md:px-8 md:pt-12 md:pb-10 min-h-screen bg-[#09090b] flex flex-col gap-6 max-w-4xl mx-auto w-full">
       <div className="flex items-center justify-between">
         <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
           Playlists

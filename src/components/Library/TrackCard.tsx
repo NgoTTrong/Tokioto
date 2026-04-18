@@ -1,6 +1,6 @@
 "use client";
-import { Play, ListPlus } from "lucide-react";
-import { useState } from "react";
+import { Play, ListPlus, Trash2 } from "lucide-react";
+import { ReactNode, useState } from "react";
 import type { Track } from "@/types";
 import AddToPlaylistSheet from "@/components/Playlist/AddToPlaylistSheet";
 
@@ -8,10 +8,14 @@ export default function TrackCard({
   track,
   onPlay,
   showAddToPlaylist = false,
+  onRemove,
+  dragHandle,
 }: {
   track: Track;
   onPlay: () => void;
   showAddToPlaylist?: boolean;
+  onRemove?: () => void;
+  dragHandle?: ReactNode;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -24,6 +28,8 @@ export default function TrackCard({
   return (
     <>
       <div className="group flex items-center gap-3 w-full p-3 rounded-2xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.07] hover:border-purple-500/40 hover:shadow-[0_0_20px_rgba(168,85,247,0.12)] transition-all duration-200">
+        {dragHandle}
+
         {/* Thumbnail — click to play */}
         <button onClick={onPlay} className="relative w-[56px] h-[56px] rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-900/50 to-pink-900/50">
           {src && <img src={src} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
@@ -54,6 +60,16 @@ export default function TrackCard({
             title="Thêm vào playlist"
           >
             <ListPlus size={16} />
+          </button>
+        )}
+
+        {onRemove && (
+          <button
+            onClick={e => { e.stopPropagation(); onRemove(); }}
+            className="p-1.5 rounded-lg text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-all flex-shrink-0 md:opacity-0 md:group-hover:opacity-100"
+            title="Xoá khỏi playlist"
+          >
+            <Trash2 size={16} />
           </button>
         )}
       </div>

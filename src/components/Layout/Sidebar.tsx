@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
-import { Library, ListMusic, PlusCircle, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Library, ListMusic, PlusCircle, PanelLeftClose, PanelLeftOpen, Settings } from "lucide-react";
 import logoImg from "@/../public/logo.png";
 
 const TABS = [
@@ -110,11 +110,24 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {!collapsed && (
-        <div className="px-5 py-4 border-t border-white/[0.05] flex-shrink-0">
-          <p className="text-[10px] text-white/15 tracking-widest uppercase">v1.0</p>
-        </div>
-      )}
+      {/* Settings at bottom */}
+      <div className="px-3 pb-3 flex-shrink-0 border-t border-white/[0.05] pt-2">
+        <Link
+          href="/setup"
+          title={collapsed ? "Cài đặt" : undefined}
+          className={`flex items-center rounded-xl transition-all duration-150 ${
+            collapsed ? "justify-center h-10" : "gap-3 px-3 py-2.5"
+          } ${
+            path === "/setup"
+              ? "bg-white/[0.08] text-white"
+              : "text-white/30 hover:text-white/70 hover:bg-white/[0.04]"
+          }`}
+        >
+          <Settings size={16} className={`flex-shrink-0 ${path === "/setup" ? "text-purple-400" : ""}`} />
+          {!collapsed && <span className="text-xs font-medium whitespace-nowrap">Cài đặt</span>}
+        </Link>
+        {!collapsed && <p className="text-[10px] text-white/10 tracking-widest uppercase mt-2 px-3">v1.0</p>}
+      </div>
     </aside>
   );
 }
