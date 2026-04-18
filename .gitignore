@@ -51,12 +51,8 @@ tokioto-tmp/
 .claude/
 .playwright-mcp/
 
-# screenshot artifacts
-*.png
-!public/**/*.png
-!public/icons/*.png
-!src/app/icon.png
-!src/app/apple-icon.png
+# screenshot artifacts (root-level only)
+/*.png
 
 # worker runtime
 worker/cookies.txt

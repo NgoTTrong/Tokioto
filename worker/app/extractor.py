@@ -22,13 +22,9 @@ def _build_ydl_opts(out_path: str) -> dict[str, Any]:
         "js_runtimes": {"node": {}},
         "remote_components": ["ejs:github"],
     }
-    # Use browser cookies to bypass YouTube bot detection
-    cookies_browser = os.environ.get("YTDLP_COOKIES_BROWSER", "chrome")
     cookies_file = os.environ.get("YTDLP_COOKIES_FILE")
-    if cookies_file:
+    if cookies_file and os.path.exists(cookies_file):
         opts["cookiefile"] = cookies_file
-    else:
-        opts["cookiesfrombrowser"] = (cookies_browser,)
     return opts
 
 def _download_audio(source_url: str, out_path: str) -> dict[str, Any]:
