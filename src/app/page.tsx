@@ -1,9 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import type { Track } from "@/types";
 import TrackCard from "@/components/Library/TrackCard";
 import logoImg from "@/../public/logo.png";
+
+const POLL_INTERVAL = 10_000; // reduced from 3s to 10s
 
 function TrackSkeleton() {
   return (
@@ -20,21 +23,33 @@ function TrackSkeleton() {
 export default function Library() {
   const [tracks, setTracks] = useState<Track[] | null>(null);
   const router = useRouter();
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const load = () =>
+    const load = () => {
+      if (document.hidden) return; // skip poll when tab not visible
       fetch("/api/tracks")
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => { if (d?.tracks) setTracks(d.tracks); });
+    };
     load();
-    const id = setInterval(load, 3000);
-    return () => clearInterval(id);
+    const id = setInterval(load, POLL_INTERVAL);
+    // pause/resume polling on visibility change
+    const onVisibility = () => { if (!document.hidden) load(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVisibility); };
   }, []);
+
+  const virtualizer = useWindowVirtualizer({
+    count: tracks?.length ?? 0,
+    estimateSize: () => 84, // TrackCard height + gap
+    overscan: 8,
+    scrollMargin: listRef.current?.offsetTop ?? 0,
+  });
 
   return (
     <main className="p-4 pt-10 pb-24 md:px-8 md:pt-12 md:pb-10 min-h-screen bg-[#09090b] max-w-4xl">
       <div className="flex items-center gap-3 mb-1">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logoImg.src} alt="" className="w-9 h-9 object-contain md:hidden" />
         <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
@@ -45,7 +60,6 @@ export default function Library() {
         {tracks === null ? "Đang tải…" : `${tracks.length} bài hát`}
       </p>
 
-      {/* Skeleton while loading */}
       {tracks === null && (
         <div className="flex flex-col gap-2">
           {[0, 1, 2, 3].map((i) => (
@@ -68,13 +82,31 @@ export default function Library() {
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
-        {tracks?.map((t, i) => (
-          <div key={t.id} className="animate-fade-in-up" style={{ animationDelay: `${i * 40}ms` }}>
-            <TrackCard track={t} onPlay={() => router.push(`/player?track=${t.id}`)} showAddToPlaylist />
+      {tracks && tracks.length > 0 && (
+        <div ref={listRef}>
+          <div style={{ height: `${virtualizer.getTotalSize()}px`, position: "relative" }}>
+            {virtualizer.getVirtualItems().map((item) => (
+              <div
+                key={item.key}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)`,
+                  paddingBottom: "8px",
+                }}
+              >
+                <TrackCard
+                  track={tracks[item.index]}
+                  onPlay={() => router.push(`/player?track=${tracks[item.index].id}`)}
+                  showAddToPlaylist
+                />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </main>
   );
 }

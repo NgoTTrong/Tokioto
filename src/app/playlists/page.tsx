@@ -29,14 +29,10 @@ export default function Playlists() {
 
   async function load() {
     const d = await fetch("/api/playlists").then(r => r.json());
-    const hydrate = async (pl: Playlist) => {
-      const detail = await fetch(`/api/playlists/${encodeURIComponent(pl.id)}`).then(r => r.json());
-      const thumbs = (detail.tracks ?? []).slice(0, 4).map((t: { thumbnail_url: string | null }) => t.thumbnail_url ?? null);
-      return { ...pl, thumbs };
-    };
-    setUser(await Promise.all((d.playlists as Playlist[]).map(hydrate)));
-    setSmart(await Promise.all((d.smart as Playlist[]).map(hydrate)));
-    setArtists(await Promise.all((d.artists as Playlist[]).map(hydrate)));
+    // thumbs are now included directly — no N+1 hydration calls
+    setUser(d.playlists as WithThumbs[]);
+    setSmart(d.smart as WithThumbs[]);
+    setArtists(d.artists as WithThumbs[]);
   }
 
   useEffect(() => { load(); }, []);

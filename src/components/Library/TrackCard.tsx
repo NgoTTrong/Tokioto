@@ -26,7 +26,7 @@ export default function TrackCard({
       <div className="group flex items-center gap-3 w-full p-3 rounded-2xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.07] hover:border-purple-500/40 hover:shadow-[0_0_20px_rgba(168,85,247,0.12)] transition-all duration-200">
         {/* Thumbnail — click to play */}
         <button onClick={onPlay} className="relative w-[56px] h-[56px] rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-900/50 to-pink-900/50">
-          {src && <img src={src} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
+          {src && <img src={src} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
           {!src && <div className="absolute inset-0 flex items-center justify-center text-white/20 text-xl">♪</div>}
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <div className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center">
