@@ -48,6 +48,7 @@ function JobSkeleton() {
 
 export default function JobHistory({ reloadFlag }: { reloadFlag: number }) {
   const [jobs, setJobs] = useState<Job[] | null>(null);
+  const [retrying, setRetrying] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setJobs(null);
@@ -68,7 +69,14 @@ export default function JobHistory({ reloadFlag }: { reloadFlag: number }) {
   };
 
   const retry = async (id: string) => {
+    setRetrying((prev) => new Set(prev).add(id));
+    // Optimistically update status so UI feels instant
+    setJobs((prev) => prev
+      ? prev.map((j) => j.id === id ? { ...j, status: "queued", error_message: null } : j)
+      : prev
+    );
     await fetch(`/api/import-jobs/${id}/retry`, { method: "POST" });
+    setRetrying((prev) => { const s = new Set(prev); s.delete(id); return s; });
   };
 
   if (jobs === null) {
@@ -115,9 +123,11 @@ export default function JobHistory({ reloadFlag }: { reloadFlag: number }) {
             {j.status === "failed" && (
               <button
                 onClick={() => retry(j.id)}
-                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-purple-600/30 text-purple-300 border border-purple-500/30 hover:bg-purple-600/50 transition-colors flex-shrink-0"
+                disabled={retrying.has(j.id)}
+                className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-purple-600/30 text-purple-300 border border-purple-500/30 hover:bg-purple-600/50 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RefreshCw className="w-3 h-3" /> Thử lại
+                <RefreshCw className={`w-3 h-3 ${retrying.has(j.id) ? "animate-spin" : ""}`} />
+                {retrying.has(j.id) ? "Đang gửi…" : "Thử lại"}
               </button>
             )}
             <button
