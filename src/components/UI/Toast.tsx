@@ -23,21 +23,21 @@ function Toast({ item, onRemove }: { item: ToastItem; onRemove: () => void }) {
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl border backdrop-blur-xl text-sm font-medium max-w-[320px] transition-all duration-300 ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+      className={`flex items-center gap-2 px-3 py-2 rounded-full shadow-2xl border backdrop-blur-xl text-sm font-medium whitespace-nowrap transition-all duration-300 ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
       } ${
         isSuccess
-          ? "bg-green-950/80 border-green-500/30 text-green-300"
-          : "bg-red-950/80 border-red-500/30 text-red-300"
+          ? "bg-green-950/90 border-green-500/30 text-green-300"
+          : "bg-red-950/90 border-red-500/30 text-red-300"
       }`}
     >
       {isSuccess
-        ? <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-green-400" />
-        : <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-400" />}
-      <span className="flex-1">{item.message}</span>
+        ? <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-green-400" />
+        : <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-red-400" />}
+      <span>{item.message}</span>
       <button onClick={() => { setVisible(false); setTimeout(onRemove, 300); }}
-        className="opacity-50 hover:opacity-100 transition-opacity flex-shrink-0">
-        <X className="w-3.5 h-3.5" />
+        className="opacity-50 hover:opacity-100 transition-opacity ml-1">
+        <X className="w-3 h-3" />
       </button>
     </div>
   );
@@ -45,7 +45,7 @@ function Toast({ item, onRemove }: { item: ToastItem; onRemove: () => void }) {
 
 export function Toaster({ toasts, onRemove }: Props) {
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 md:bottom-8 flex flex-col gap-2 z-50 pointer-events-none">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 flex flex-col gap-2 z-50 pointer-events-none">
       {toasts.map((t) => (
         <div key={t.id} className="pointer-events-auto">
           <Toast item={t} onRemove={() => onRemove(t.id)} />
