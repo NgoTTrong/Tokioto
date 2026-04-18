@@ -19,7 +19,7 @@ def _build_ydl_opts(out_path: str) -> dict[str, Any]:
         "postprocessors": [
             {"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "192"},
         ],
-        "extractor_args": {"youtube": {"player_client": ["ios", "android"]}},
+        "extractor_args": {"youtube": {"player_client": ["tv_embedded", "ios"]}},
     }
     cookies_file = os.environ.get("YTDLP_COOKIES_FILE")
     if cookies_file and os.path.exists(cookies_file):
