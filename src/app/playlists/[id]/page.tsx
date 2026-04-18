@@ -59,7 +59,7 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
         </button>
         <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent truncate">{name || "…"}</h1>
-          {tracks.length > 0 && <p className="text-white/30 text-xs mt-0.5">{tracks.length} bài hát</p>}
+          {tracks && tracks.length > 0 && <p className="text-white/30 text-xs mt-0.5">{tracks.length} bài hát</p>}
         </div>
       </div>
       {tracks === null ? (
