@@ -9,7 +9,20 @@ from colorthief import ColorThief
 from .storage import upload_audio, upload_thumbnail
 from .db import set_track_ready, set_track_failed, set_job_running, set_job_done, set_job_failed
 
-def _build_ydl_opts(out_path: str) -> dict[str, Any]:
+def _write_cookies_if_needed() -> str | None:
+    b64 = os.environ.get("YTDLP_COOKIES_B64")
+    if b64:
+        import base64, tempfile
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="wb")
+        tmp.write(base64.b64decode(b64))
+        tmp.close()
+        return tmp.name
+    direct = os.environ.get("YTDLP_COOKIES_FILE")
+    if direct and os.path.exists(direct):
+        return direct
+    return None
+
+def _build_ydl_opts(out_path: str, cookies_file: str | None) -> dict[str, Any]:
     base = out_path.rsplit(".", 1)[0]
     opts: dict[str, Any] = {
         "format": "bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best",
@@ -21,13 +34,13 @@ def _build_ydl_opts(out_path: str) -> dict[str, Any]:
         ],
         "extractor_args": {"youtube": {"player_client": ["tv_embedded", "ios"]}},
     }
-    cookies_file = os.environ.get("YTDLP_COOKIES_FILE")
-    if cookies_file and os.path.exists(cookies_file):
+    if cookies_file:
         opts["cookiefile"] = cookies_file
     return opts
 
 def _download_audio(source_url: str, out_path: str) -> dict[str, Any]:
-    opts = _build_ydl_opts(out_path)
+    cookies_file = _write_cookies_if_needed()
+    opts = _build_ydl_opts(out_path, cookies_file)
     with YoutubeDL(opts) as ydl:
         info = ydl.extract_info(source_url, download=True)
     return info
