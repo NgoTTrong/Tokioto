@@ -58,3 +58,5 @@ tokioto-tmp/
 worker/cookies.txt
 worker/**/__pycache__/
 worker/*.egg-info/
+
+.vercel
