@@ -84,21 +84,37 @@ export default function PatternLock({ onSubmit, disabled }: Props) {
       onPointerUp={end}
       onPointerCancel={end}
     >
+      <defs>
+        <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#a855f7" />
+          <stop offset="100%" stopColor="#ec4899" />
+        </linearGradient>
+      </defs>
+
       {seq.map((idx, i) => {
         if (i === 0) return null;
         const a = dotPos(seq[i - 1]);
         const b = dotPos(idx);
-        return <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="white" strokeWidth="4" opacity="0.8" />;
+        return <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="url(#lineGrad)" strokeWidth="3" opacity="0.9" strokeLinecap="round" />;
       })}
       {drawing && seq.length > 0 && ptr && (() => {
         const a = dotPos(seq[seq.length - 1]);
-        return <line x1={a.x} y1={a.y} x2={ptr.x} y2={ptr.y} stroke="white" strokeWidth="3" opacity="0.4" />;
+        return <line x1={a.x} y1={a.y} x2={ptr.x} y2={ptr.y} stroke="#a855f7" strokeWidth="2.5" opacity="0.4" strokeLinecap="round" />;
       })()}
       {Array.from({ length: DOT_COUNT }).map((_, i) => {
         const p = dotPos(i);
         const active = seq.includes(i);
         return (
-          <circle key={i} cx={p.x} cy={p.y} r={active ? 14 : 10} fill={active ? "white" : "rgba(255,255,255,0.4)"} />
+          <g key={i}>
+            {active && <circle cx={p.x} cy={p.y} r="20" fill="rgba(168,85,247,0.15)" />}
+            <circle
+              cx={p.x} cy={p.y}
+              r={active ? 14 : 11}
+              fill={active ? "#a855f7" : "rgba(255,255,255,0.35)"}
+              stroke={active ? "#ec4899" : "rgba(255,255,255,0.25)"}
+              strokeWidth={active ? "2" : "1.5"}
+            />
+          </g>
         );
       })}
     </svg>

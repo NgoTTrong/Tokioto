@@ -3,16 +3,16 @@ import { verifySession } from "@/lib/session";
 
 const PUBLIC_PATHS = ["/login", "/setup", "/api/auth/login", "/api/auth/setup", "/api/auth/status", "/api/cron/"];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
   if (PUBLIC_PATHS.some((p) => path.startsWith(p))) return NextResponse.next();
   if (path.startsWith("/_next") || path.startsWith("/favicon") || path === "/manifest.json") {
     return NextResponse.next();
   }
 
-  // Note: middleware only validates JWT signature (fast path).
+  // Note: proxy only validates JWT signature (fast path).
   // Full session revocation (DB check) is enforced per-handler via requireAuth().
-  // Every API route handler MUST call requireAuth() — middleware alone is not enough.
+  // Every API route handler MUST call requireAuth() — proxy alone is not enough.
   const token = req.cookies.get("session")?.value;
   const payload = token ? await verifySession(token) : null;
   if (!payload) {

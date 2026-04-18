@@ -40,7 +40,18 @@ export async function POST(req: NextRequest) {
 
   const { data: existing } = await db.from("tracks").select("*")
     .eq("source", src.source).eq("source_id", src.id).maybeSingle();
-  if (existing) return NextResponse.json({ track: existing, alreadyExists: true });
+  if (existing) {
+    if (existing.status === "ready") return NextResponse.json({ track: existing, alreadyExists: true });
+    // Track stuck (pending/failed with no active job) — create a new job and dispatch
+    const { data: job } = await db.from("import_jobs").insert({
+      track_id: existing.id, source_url: src.url, status: "queued",
+    }).select().single();
+    if (job) {
+      await db.from("tracks").update({ status: "pending" }).eq("id", existing.id);
+      try { await dispatchJob({ job_id: job.id, track_id: existing.id, source_url: src.url }); } catch (e) { console.error("[tracks] dispatch failed:", e); }
+    }
+    return NextResponse.json({ track: existing });
+  }
 
   const { data: track, error } = await db.from("tracks").insert({
     source: src.source, source_url: src.url, source_id: src.id,
@@ -56,8 +67,8 @@ export async function POST(req: NextRequest) {
 
   try {
     await dispatchJob({ job_id: job.id, track_id: track.id, source_url: src.url });
-  } catch {
-    // leave queued; cron will retry
+  } catch (e) {
+    console.error("[tracks] dispatch failed:", e);
   }
   return NextResponse.json({ track });
 }

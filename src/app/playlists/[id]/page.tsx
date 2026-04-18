@@ -2,6 +2,7 @@
 import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Track } from "@/types";
+import { ChevronLeft } from "lucide-react";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -9,7 +10,8 @@ import TrackCard from "@/components/Library/TrackCard";
 import OfflineButton from "@/components/Playlist/OfflineButton";
 
 export default function PlaylistDetail({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+  const { id: rawId } = use(params);
+  const id = decodeURIComponent(rawId);
   const router = useRouter();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [name, setName] = useState("");
@@ -18,7 +20,9 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
 
   const load = useCallback(async () => {
     const d = await fetch(`/api/playlists/${encodeURIComponent(id)}`).then(r => r.json());
-    setTracks(d.tracks); setName(d.playlist.name); setSmart(!!d.playlist.smart);
+    setTracks(d.tracks ?? []);
+    setName(d.playlist?.name ?? id);
+    setSmart(!!d.playlist?.smart);
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
@@ -36,8 +40,16 @@ export default function PlaylistDetail({ params }: { params: Promise<{ id: strin
   }
 
   return (
-    <main className="p-4 pt-8 flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">{name}</h1>
+    <main className="p-4 pt-10 pb-24 md:px-8 md:pt-12 md:pb-10 min-h-screen bg-[#09090b] flex flex-col gap-4 page-enter-right max-w-4xl">
+      <div className="flex items-center gap-3">
+        <button onClick={() => router.back()} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/[0.06] hover:bg-white/[0.10] transition-colors text-white/60 hover:text-white flex-shrink-0">
+          <ChevronLeft size={18} />
+        </button>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent truncate">{name || "…"}</h1>
+          {tracks.length > 0 && <p className="text-white/30 text-xs mt-0.5">{tracks.length} bài hát</p>}
+        </div>
+      </div>
       {!smart && <OfflineButton ids={tracks.map(t => t.id)} />}
       {!smart ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>

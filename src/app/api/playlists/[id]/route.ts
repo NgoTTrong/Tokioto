@@ -21,11 +21,17 @@ async function resolveSmart(id: string) {
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const denied = await requireAuth(req); if (denied) return denied;
-  const { id } = await ctx.params;
+  const { id: rawId } = await ctx.params;
+  const id = decodeURIComponent(rawId);
   if (id.startsWith("smart:")) {
     const tracks = await resolveSmart(id);
     if (tracks === null) return NextResponse.json({ error: "not found" }, { status: 404 });
-    return NextResponse.json({ playlist: { id, name: id.replace("smart:", ""), smart: true }, tracks });
+    const SMART_NAMES: Record<string, string> = {
+      "smart:all": "All songs",
+      "smart:recent": "Recently added",
+      "smart:most-played": "Most played",
+    };
+    return NextResponse.json({ playlist: { id, name: SMART_NAMES[id] ?? id, smart: true }, tracks });
   }
   const db = getServiceClient();
   const { data: pl } = await db.from("playlists").select("*").eq("id", id).maybeSingle();
@@ -37,7 +43,8 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
 
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const denied = await requireAuth(req); if (denied) return denied;
-  const { id } = await ctx.params;
+  const { id: rawId } = await ctx.params;
+  const id = decodeURIComponent(rawId);
   if (id.startsWith("smart:")) return NextResponse.json({ error: "read only" }, { status: 400 });
   const body = Patch.safeParse(await req.json());
   if (!body.success) return NextResponse.json({ error: "bad body" }, { status: 400 });
@@ -51,7 +58,8 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 
 export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const denied = await requireAuth(req); if (denied) return denied;
-  const { id } = await ctx.params;
+  const { id: rawId } = await ctx.params;
+  const id = decodeURIComponent(rawId);
   if (id.startsWith("smart:")) return NextResponse.json({ error: "read only" }, { status: 400 });
   const db = getServiceClient();
   const { data: pl } = await db.from("playlists").select("id").eq("id", id).maybeSingle();

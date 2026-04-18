@@ -8,7 +8,8 @@ const Body = z.object({ order: z.array(z.string().uuid()) });
 
 export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const denied = await requireAuth(req); if (denied) return denied;
-  const { id } = await ctx.params;
+  const { id: rawId } = await ctx.params;
+  const id = decodeURIComponent(rawId);
   const body = Body.safeParse(await req.json());
   if (!body.success) return NextResponse.json({ error: "bad body" }, { status: 400 });
   const db = getServiceClient();

@@ -11,15 +11,25 @@ from .db import set_track_ready, set_track_failed, set_job_running, set_job_done
 
 def _build_ydl_opts(out_path: str) -> dict[str, Any]:
     base = out_path.rsplit(".", 1)[0]
-    return {
-        "format": "bestaudio/best",
+    opts: dict[str, Any] = {
+        "format": "bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best",
         "outtmpl": f"{base}.%(ext)s",
         "noplaylist": True,
         "quiet": True,
         "postprocessors": [
             {"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "192"},
         ],
+        "js_runtimes": {"node": {}},
+        "remote_components": ["ejs:github"],
     }
+    # Use browser cookies to bypass YouTube bot detection
+    cookies_browser = os.environ.get("YTDLP_COOKIES_BROWSER", "chrome")
+    cookies_file = os.environ.get("YTDLP_COOKIES_FILE")
+    if cookies_file:
+        opts["cookiefile"] = cookies_file
+    else:
+        opts["cookiesfrombrowser"] = (cookies_browser,)
+    return opts
 
 def _download_audio(source_url: str, out_path: str) -> dict[str, Any]:
     opts = _build_ydl_opts(out_path)

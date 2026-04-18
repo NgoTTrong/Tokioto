@@ -46,3 +46,17 @@ next-env.d.ts
 
 # temp dirs
 tokioto-tmp/
+
+# claude session data
+.claude/
+.playwright-mcp/
+
+# screenshot artifacts
+*.png
+!public/**/*.png
+!public/icons/*.png
+
+# worker runtime
+worker/cookies.txt
+worker/**/__pycache__/
+worker/*.egg-info/
